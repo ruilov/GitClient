@@ -1,6 +1,9 @@
+-- SyncScreen.lua
+-- 
+
 SyncScreen = class()
 
-function SyncScreen:init(x)
+function SyncScreen:init()
     local map = IO.getProjectMap()
     self.list = ListChooser(10,10,WIDTH-20,600)
     for repo,proj in pairs(map) do
