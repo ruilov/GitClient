@@ -51,10 +51,14 @@ function DiffScreen.splitLines(str)
     local idx = str:find("\n")
     local ans = {}
     while idx do
-        table.insert(ans,str:sub(1,idx-1))
+        local prefix = str:sub(1,idx-1)
+        if prefix:len() == 0 then prefix = " " end
+        table.insert(ans,prefix)
         str = str:sub(idx+1)
         idx = str:find("\n")
     end
+    
+    if str:len() == 0 then str = " " end
     table.insert(ans,str)
     return ans
 end
