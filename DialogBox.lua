@@ -26,7 +26,7 @@ function DialogBox:init(x,y,w,h,okcb,cancelcb)
     self.textbox = Textbox(self.x+180,self.y+self.h-60,self.w-200)
     self.textbox:setFontSize(35)
     self.textbox.protected = true
-    self.textbox:activate()
+    self.textbox:select()
 end
 
 function DialogBox:draw()
@@ -50,7 +50,7 @@ end
 
 function DialogBox:touched(touch)
     local tt = self.textbox:touched(touch)
-    if not tt then self.textbox.active = false end
+    if not tt then self.textbox:unselect() end
     
     self.ok:touched(touch)
     self.cancel:touched(touch)

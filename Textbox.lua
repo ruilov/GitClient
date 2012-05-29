@@ -14,7 +14,8 @@ function Textbox:init(x,y,w)
     self:setFontSize(30)
     
     -- internal state
-    self.active = false
+    self.active = true
+    self.selected = false
     self.cursorPos = 0  -- 0 means before the first letter, 1 after the first, so on
 end
 
@@ -31,7 +32,7 @@ end
 -- call back for when a key is pressed
 function Textbox:keyboard(key)
     -- if not active, ignore
-    if not self.active then return nil end
+    if not self.selected then return nil end
     
     if key == BACKSPACE then
         -- note if we're already at the start, nothing to do
@@ -74,15 +75,15 @@ function Textbox:applyTextProperties()
 end
 
 -- when the text box is active, the keyboard shows up (and coursor and other elements too)
-function Textbox:activate()
-    self.active = true
+function Textbox:select()
+    self.selected = true
     -- move the cursor to the end
     self.cursorPos = self:displayText():len()
     showKeyboard()
 end
 
-function Textbox:inactivate()
-    self.active = false
+function Textbox:unselect()
+    self.selected = false
     hideKeyboard()
 end
 
@@ -108,7 +109,7 @@ function Textbox:draw()
     local textX = self.x + (self.w - textW)/2
     text(displayText,textX,self.y)
 
-    if not self.active then
+    if not self.selected then
         popStyle()
         return nil
     end
@@ -126,12 +127,12 @@ function Textbox:draw()
 end
 
 function Textbox:onEnded(touch)
-    if not self.active then self:activate() end
+    if not self.selected then self:select() end
 end
 
 -- moves the cursor to the x coordinate of the touch
 function Textbox:onTouched(touch)
-    if not self.active then return nil end
+    if not self.selected then return nil end
     
     self.cursorPos = 0
 

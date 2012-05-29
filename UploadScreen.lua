@@ -86,7 +86,7 @@ function UploadScreen:touched(touch)
     end
     
     local tt = self.textbox:touched(touch)
-    if not tt then self.textbox.active = false end
+    if not tt then self.textbox:unselect() end
     
     for _,b in ipairs(self.buttons) do b:touched(touch) end
 end
