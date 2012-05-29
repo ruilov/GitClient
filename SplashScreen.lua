@@ -1,3 +1,5 @@
+import("LIB LUI")
+
 SplashScreen = class()
 
 function SplashScreen:init()
