@@ -40,6 +40,12 @@ function ListChooser:draw()
     popStyle()
 end
 
+function ListChooser:translate(dx,dy)
+    for _,item in ipairs(self.items) do
+        item.location = vec2(item.location.x+dx,item.location.y+dy)
+    end
+end
+
 function ListChooser:touched(touch)
     for _,item in ipairs(self.items) do
         item:touched(touch)

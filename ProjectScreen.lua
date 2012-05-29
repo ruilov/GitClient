@@ -9,7 +9,7 @@ function ProjectScreen:init(repo,proj)
     GIT_CLIENT:listFiles(function(files) self:gotFiles(files) end)
     
     self.projectFiles = ProjectLoader.readAll(proj)
-    self.list = ListChooser(20,0,WIDTH-40,HEIGHT-200)
+    self.list = ListChooser(20,0,WIDTH-100,HEIGHT-20)
     self.listButtons = {}
     for file,localConts in pairs(self.projectFiles) do
         local cb = function()
@@ -82,4 +82,8 @@ end
 
 function ProjectScreen:touched(touch)
     self.list:touched(touch)
+    
+    if touch.state == MOVING then
+        self.list:translate(0,touch.deltaY)
+    end
 end
