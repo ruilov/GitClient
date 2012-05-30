@@ -1,6 +1,6 @@
 -- Main.lua
 USERNAME = "ruilov"
-PASSWORD = "ruilov1"
+PASSWORD = "pwd"
 
 function setup()
     TOUCHES = {}
