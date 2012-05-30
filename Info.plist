@@ -13,8 +13,8 @@
 		<string>GitClient</string>
 		<string>DialogBox</string>
 		<string>ListChooser</string>
-		<string>Textbox</string>
 		<string>Button2</string>
+		<string>BaseScreen</string>
 		<string>SplashScreen</string>
 		<string>SettingsScreen</string>
 		<string>UploadScreen</string>

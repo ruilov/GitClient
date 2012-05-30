@@ -7,8 +7,7 @@
 --]]
 
 -- notes
--- rename back to the names in the paper - DONE
--- implement binary search in two places
+-- implement binary search in two places - DONE
 -- need string hashing function - DONE
 -- need to delete jackpot matches at the end - DONE
 
