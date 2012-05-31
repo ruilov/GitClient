@@ -11,9 +11,6 @@
 		<string>Differ</string>
 		<string>ProjectLoader</string>
 		<string>GitClient</string>
-		<string>DialogBox</string>
-		<string>ListChooser</string>
-		<string>Button2</string>
 		<string>SplashScreen</string>
 		<string>UploadScreen</string>
 		<string>SyncScreen</string>

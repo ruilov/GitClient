@@ -15,7 +15,7 @@ function SplashScreen:init()
             }},
             {type="blank",amount=30},
             {type="block",elems = {
-                {type="SimpleArrow", text = "Download"},
+                --{type="SimpleArrow", text = "Download"},
                 {type="SimpleArrow", text = "Upload",
                     callback = function() screen = UploadScreen(self) end}
             }},
