@@ -12,28 +12,45 @@ function GitClient:init(username,password)
     self.username = username
 end
 
+function GitClient:setUsername(username)
+    if username ~= self.username then
+        self.authorization = nil
+        self.username = username
+    end
+end
+
 function GitClient:setPassword(password)
     --print("setting password",password,"end")
     self.authorization = "Basic "..Base64.encode(self.username..":"..password)
+end
+
+function GitClient:removePassword()
+    self.authorization = nil
 end
 
 function GitClient:setReponame(reponame)
     self.reponame = reponame
 end
 
-function GitClient:listRepos(cb)
+function GitClient:listRepos(cb,failcb)
     local r = {
         url = BASE_URL.."users/"..self.username.."/repos",
         callback = function(json,status,header)
-            assert(status==200,"failed to retrieve repo list for "..self.username)
+            if status ~= 200 then
+                failcb(json)
+            end
+            --assert(status==200,"failed to retrieve repo list for "..self.username)
             local repos = Json.Decode(json)
             cb(repos)
+        end,
+        failcb = function(err)
+            if failcb then failcb(err) end
         end
     }
     self:submitRequest(r)
 end
 
-function GitClient:listFiles(cb)
+function GitClient:listFiles(cb,failcb)
     -- get the actual tree from the tree obj
     local cb3 = function(tree)
         cb(tree.tree)
@@ -49,7 +66,7 @@ function GitClient:listFiles(cb)
         self:getCommit(branch.commit.sha,cb2)
     end
     
-    self:getMasterBranch(cb1)
+    self:getMasterBranch(cb1,failcb)
 end
 
 function GitClient:fileContents(sha,cb)
@@ -100,7 +117,11 @@ function GitClient:getMasterBranch(cb,failcb)
         url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/branches",
         callback = function(json,status,header)
             --print("got master branch callback")
-            assert(status==200,"failed to retrieve branch list for "..self.reponame)
+            if status ~= 200 then
+                failcb(json)
+                return nil
+            end
+            --assert(status==200,"failed to retrieve branch list for "..self.reponame)
             local branches = Json.Decode(json)
             for _,branch in ipairs(branches) do
                 if branch.name == "master" then
@@ -232,4 +253,14 @@ function GitClient:submitRequest(req)
         headers = headers,
         data = inputs
     })
+    --[[
+    print("sent request")
+    print("url = "..req.url)
+    print("method = "..method)
+    print("data = "..inputs)
+    print("headers")
+    for c,v in pairs(headers) do print(c.." = "..v) end
+    print("")
+    --]]
+    --req.callback()
 end

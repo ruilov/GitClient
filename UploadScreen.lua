@@ -1,100 +1,93 @@
-UploadScreen = class()
+-- UploadScreen.lua
 
-function UploadScreen:init(x)
-    GIT_CLIENT:listRepos(function(repos) self:listReposCB(repos) end )
-    self.textbox = Textbox(265,556,400)
-    self.textbox:setFontSize(35)
-    self.list = ListChooser(50,10,400,480)
+import("LIB LUI")
+
+UploadScreen = class(AppleScreen)
+
+function UploadScreen:init(prevScreen)
+    local schema = {
+        title = "Upload",
+        backButton = {
+            text = "Menu",
+            callback = function() screen = prevScreen end,
+        },
+        elems = {
+            {type="block",elems = {
+                {type="TextInput",label="Project",shadowText = "codea project",tag="project"},
+                {type="TextInput",label="Password",protected=true,tag="password"},
+            }},
+            {type="blank",amount = 30},
+            {type="text",text="Repos for "..GIT_CLIENT.username,tag="label"},
+            {type="blank",amount = 5},
+            {type="block",elems = {
+            }},
+        }
+    }
+    AppleScreen.init(self,schema)
     
-    self.buttons = {self.list}
+    self.taggedElems.label:showHourGlass(true)
+    
+    -- now send a request for the repos
+    local failcb = function(err)
+        self.taggedElems.label:showHourGlass(false)
+        print("FAILED\n",err)
+    end
+    GIT_CLIENT:listRepos(function(repos) self:listReposCB(repos) end,failcb )
 end
 
 function UploadScreen:listReposCB(repos)
-    for _,r in ipairs(repos) do
+    local lastBlock = self.schema.elems[#self.schema.elems]
+    
+    for _,repo in ipairs(repos) do
         local cb = function()
-            local projectName = self.textbox.text
-            if not ProjectLoader.exists(projectName) then
-                print("Project doesn't exist")
+            -- clean out status on all repos
+            for _,r in ipairs(repos) do
+                self.taggedElems[r.name]:setRightText("")
+            end
+            -- retrieve the project name
+            local projBox = self.taggedElems.project.textbox
+            local projName = projBox.text
+            if projBox.textIsShadow then projName = "" end
+            
+            local passBox = self.taggedElems.password.textbox
+            local password = passBox.text
+            
+            -- see if the project exists
+            if not ProjectLoader.exists(projName) then
+                self.taggedElems[repo.name]:setRightText("Codea project above not found")
                 return nil
             end
             
-            local reponame = r.name
-            GIT_CLIENT:setReponame(reponame)
+            GIT_CLIENT:setReponame(repo.name)
+            GIT_CLIENT:setPassword(password)
             
-            local cancelCB = function()
-                --print("Cancel")
-                self.dialogBox = nil
+            self.taggedElems[repo.name]:showHourGlass(true)
+            self.active = false -- we'll wait for thee http request
+            
+            local projectContents = ProjectLoader.readAll(projName)
+            
+            local commitcb = function(info)
+                self.active = true
+                self.taggedElems[repo.name]:showHourGlass(false)
+                self.taggedElems[repo.name]:setRightText("OK")
+                IO.mapProjectRepo(projName,repo.name)
             end
-            
-            local okCB = function(password)
-                GIT_CLIENT:setPassword(password)
-                print("Uploading "..projectName.." to "..reponame)
-                local projectContents = ProjectLoader.readAll(projectName)
-                local cb = function(info)
-                    print("Upload successful")
-                    IO.mapProjectRepo(projectName,reponame)
-                end
                 
-                local failcb = function(err)
-                    print("FAILED")
-                    print(err)
-                end
-                GIT_CLIENT:commit(projectContents,"uploaded from codea's"..projectName,cb,failcb)
-                self.dialogBox = nil
+            local failcb = function(err)
+                self.active = true
+                self.taggedElems[repo.name]:showHourGlass(false)
+                self.taggedElems[repo.name]:setRightText("FAILED")
+                GIT_CLIENT:removePassword()
+                print("ERROR:\n",err)
             end
             
-            self.dialogBox = DialogBox(100,400,600,150,okCB,cancelCB)
+            GIT_CLIENT:commit(projectContents,"uploaded from codea's "..projName,commitcb,failcb)
         end
-        self.list:add(r.name,cb)
-    end
-end
-
-function UploadScreen:draw()
-    self.textbox:draw()
-    for _,b in ipairs(self.buttons) do b:draw() end
-    
-    pushStyle()
-    font("AmericanTypewriter-Bold")
-    fontSize(70)
-    fill(255, 255, 255, 255)
-    local tex = "Upload"
-    local w,h = textSize(tex)
-    textMode(CENTER)
-    text(tex,WIDTH/2,HEIGHT-h-20)
-    
-    textMode(CORNER)
-    fontSize(30)
-    fill(255, 255, 255, 255)
-    local tex = "Project name:"
-    text(tex,50,562)
-    
-    fontSize(30)
-    fill(255, 255, 255, 255)
-    local tex = "GitHub Repositories:"
-    text(tex,50,500)
-    popStyle()
-    
-    if self.dialogBox then
-        self.dialogBox:draw()
-    end
-end
-
-function UploadScreen:touched(touch)
-    if self.dialogBox then
-        self.dialogBox:touched(touch)
-        return nil
+        
+        local newElem = {type="SimpleArrow",text=repo.name,callback=cb,tag=repo.name}
+        table.insert(lastBlock.elems,newElem)
     end
     
-    local tt = self.textbox:touched(touch)
-    if not tt then self.textbox:unselect() end
-    
-    for _,b in ipairs(self.buttons) do b:touched(touch) end
-end
-
-function UploadScreen:keyboard(key)
-    if self.dialogBox then
-        self.dialogBox:keyboard(key)
-        return nil
-    end
-    self.textbox:keyboard(key)
+    -- note this also gets rid of the hour glass in the label
+    self:rebuild()
 end

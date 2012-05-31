@@ -1,6 +1,6 @@
 -- ListChooser.lua
 
-ListChooser = class()
+ListChooser = class(Panel)
 
 function ListChooser:init(x,y,w,h)
     self.x = x

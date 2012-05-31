@@ -1,45 +1,26 @@
 -- Main.lua
-USERNAME = "ruilov"
-PASSWORD = "pwd"
-
 function setup()
+    --saveLocalData("projectMap","[]")
     TOUCHES = {}
     screen = SplashScreen()
     
     local username = IO.loadUsername()
     if username then
         GIT_CLIENT = GitClient(username)
+    else
+        GIT_CLEINT = GitClient("")
     end
-    --screen = UploadScreen()
-    
-    
-    --client = GitClient(USERNAME)
-    --client:listRepos(repoListCB)
-    --client:setReponame("Codea-GitClient")
-    --client:setPassword(PASSWORD)
-    --client:getMasterBranch(masterBranchCB)
-    --client:listFiles(fileListCB)
-    
-    --[[
-    local projectContents = ProjectLoader.readAll("LIB LUI")
-    for f,c in pairs(projectContents) do
-        print(f)
-    end
-    local cb = function(info)
-        print("Commited!")
-        print("tree = "..info.tree)
-        print("commit = "..info.commit)
-    end
-    client:commit(projectContents,"first project! with touch",cb)
-    --]]
 end
 
 function draw()
     background(0)
     screen:draw()
+    if GLOBAL_SHOWKEYBOARD then
+        GLOBAL_SHOWKEYBOARD = nil
+        showKeyboard()
+    end
     
-    pushStyle()
-    
+    pushStyle() 
     noStroke()
     ellipseMode(CENTER)
     local newTouches = {}
@@ -65,21 +46,4 @@ end
 
 function keyboard(key)
     if screen.keyboard then screen:keyboard(key) end
-end
-
-function repoListCB(repos)
-    for _,repo in ipairs(repos) do
-        print(repo.name)
-    end
-end
-
-function fileListCB(fileList)
-    for _,elem in ipairs(fileList) do
-        print(elem.path)
-        client:fileContents(elem.sha,fileCB)
-    end
-end
-
-function fileCB(data)
-    print(data)
 end

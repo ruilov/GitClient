@@ -1,33 +1,35 @@
 -- SyncScreen.lua
--- 
+-- SyncScreen has the list of links that we have created from github repos to local projects
 
-SyncScreen = class()
+import("LIB LUI")
 
-function SyncScreen:init()
-    local map = IO.getProjectMap()
-    self.list = ListChooser(10,10,WIDTH-20,600)
-    for repo,proj in pairs(map) do
-        local cb = function()
-            screen = ProjectScreen(repo,proj)
-        end
-        self.list:add(repo.." (github) -> "..proj .. " (codea)",cb)
-    end
-end
+SyncScreen = class(AppleScreen)
 
-function SyncScreen:draw()
-    self.list:draw()
+function SyncScreen:init(prevScreen)
+    local links = {}  
+    local schema = {
+        title = "Sync",
+        backButton = {
+            text = "Menu",
+            callback = function() screen = prevScreen end,
+        },
+        elems = {
+            {type="text",text="GitHub / Codea"},
+            {type="blank",amount=5},
+            {type="block",elems = links},
+        }
+    }
     
-    pushStyle()
-    font("AmericanTypewriter-Bold")
-    fontSize(70)
-    fill(255, 255, 255, 255)
-    local tex = "Choose repository"
-    local w,h = textSize(tex)
-    textMode(CENTER)
-    text(tex,WIDTH/2,HEIGHT-h-20)
-    popStyle()
-end
-
-function SyncScreen:touched(touch)
-    self.list:touched(touch)
+    local map = IO.getProjectMap()
+    for _,elem in ipairs(map) do
+        local repo = elem.repo
+        local proj = elem.project
+        local cb = function()
+            screen = ProjectScreen(repo,proj,self)
+        end
+        table.insert(links,{type="SimpleArrow",text=repo.." / "..proj,
+            callback = cb})
+    end
+    
+    AppleScreen.init(self,schema)
 end

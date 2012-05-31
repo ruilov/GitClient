@@ -14,9 +14,8 @@
 		<string>DialogBox</string>
 		<string>ListChooser</string>
 		<string>Button2</string>
-		<string>BaseScreen</string>
 		<string>SplashScreen</string>
-		<string>SettingsScreen</string>
+		<string>Temp</string>
 		<string>UploadScreen</string>
 		<string>SyncScreen</string>
 		<string>ProjectScreen</string>
