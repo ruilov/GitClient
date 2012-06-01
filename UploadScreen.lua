@@ -14,9 +14,13 @@ function UploadScreen:init(prevScreen)
         elems = {
             {type="block",elems = {
                 {type="TextInput",label="Project",shadowText = "codea project",tag="project"},
-                {type="TextInput",label="Password",protected=true,tag="password"},
+                {type="TextInput",label="Password",protected=true,tag="password"}
             }},
-            {type="blank",amount = 30},
+            {type="blank",amount=20},
+            {type="text",text="Commit message"},
+            {type="blank",amount=5},
+            {type="MultiTextInput",lines = 5,tag="commit"},
+            {type="blank",amount = 20},
             {type="text",text="Repos for "..GIT_CLIENT.username,tag="label"},
             {type="blank",amount = 5},
             {type="block",elems = {
@@ -81,7 +85,11 @@ function UploadScreen:listReposCB(repos)
                 print("ERROR:\n",err)
             end
             
-            GIT_CLIENT:commit(projectContents,"uploaded from codea's "..projName,commitcb,failcb)
+            local msg = self.taggedElems.commit.textbox.text
+            if msg:len() == 0 then
+                msg = "uploaded from codea's "..projName
+            end
+            GIT_CLIENT:commit(projectContents,msg,commitcb,failcb)
         end
         
         local newElem = {type="SimpleArrow",text=repo.name,callback=cb,tag=repo.name}
