@@ -1,14 +1,13 @@
 -- Main.lua
 function setup()
-    --saveLocalData("projectMap","[]")
     TOUCHES = {}
-    screen = SplashScreen()
+    screen = StartScreen()
     
     local username = IO.loadUsername()
     if username then
         GIT_CLIENT = GitClient(username)
     else
-        GIT_CLEINT = GitClient("")
+        GIT_CLIENT = GitClient("")
     end
 end
 

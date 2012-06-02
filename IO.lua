@@ -8,53 +8,30 @@ function IO.loadUsername()
     return readLocalData("username")
 end
 
-function IO.mapProjectRepo(projectName,repoName)
-    local mapStr = readLocalData("projectMap")
-    if not mapStr then mapStr = "[]" end
-    local map = Json.Decode(mapStr)
+function IO.addQuickLink(repo,proj,user)
+    local links = IO.getQuickLinks()
     
-    -- see if this mapping already exists
-    local exists = false
-    for _,elem in ipairs(map) do
-        if elem.project == projectName and elem.repo == repoName then
-            exists = true
-            break
+    -- see if this link already exists, and if so, move it up to the start
+    for idx,elem in ipairs(links) do
+        if elem.proj == proj and elem.repo == repo and elem.user == user then
+            table.remove(links,idx)
+            table.insert(links,1,elem)
+            local newLinks = Json.Encode(links)
+            saveLocalData("quickLinks",newLinks)
+            return nil
         end
     end
     
-    if exists then return nil end
-    
-    table.insert(map,1,{project=projectName,repo=repoName})
-    local newMapStr = Json.Encode(map)
-    saveLocalData("projectMap",newMapStr)
+    -- if we get here it's because this elem doesn't exist yet
+    local elem = {proj=proj,repo=repo,user=user}
+    table.insert(links,1,elem)
+    local newLinks = Json.Encode(links)
+    saveLocalData("quickLinks",newLinks)
 end
 
-function IO.getProjectMap()
-    local mapStr = readLocalData("projectMap")
-    if not mapStr then mapStr = "[]" end
-    local map = Json.Decode(mapStr)
-    return map
-end
-
-function IO.delink(projectName,repoName)
-    local mapStr = readLocalData("projectMap")
-    if not mapStr then mapStr = "[]" end
-    local map = Json.Decode(mapStr)
-    
-    -- see if this mapping already exists
-    local exists = false
-    local newMap = {}
-    for _,elem in ipairs(map) do
-        if elem.project == projectName and elem.repo == repoName then
-            exists = true
-        else
-            table.insert(newMap,elem)
-        end
-    end
-    
-    if not exists then return false end
-
-    local newMapStr = Json.Encode(newMap)
-    saveLocalData("projectMap",newMapStr)
-    return true
+function IO.getQuickLinks()
+    local links = readLocalData("quickLinks")
+    if not links then links = "[]" end
+    local links = Json.Decode(links)
+    return links
 end

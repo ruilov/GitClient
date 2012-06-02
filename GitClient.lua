@@ -36,10 +36,11 @@ function GitClient:listRepos(cb,failcb)
     local r = {
         url = BASE_URL.."users/"..self.username.."/repos",
         callback = function(json,status,header)
-            if status ~= 200 then
+            if failcb and status ~= 200 then
                 failcb(json)
+                return nil
             end
-            --assert(status==200,"failed to retrieve repo list for "..self.username)
+            assert(status==200,"failed to retrieve repo list for "..self.username)
             local repos = Json.Decode(json)
             cb(repos)
         end,
@@ -50,7 +51,8 @@ function GitClient:listRepos(cb,failcb)
     self:submitRequest(r)
 end
 
-function GitClient:listFiles(cb,failcb)
+-- commit is optional, in which case it will list the master branch
+function GitClient:listFiles(cb,failcb,commit)
     -- get the actual tree from the tree obj
     local cb3 = function(tree)
         cb(tree.tree)
@@ -66,7 +68,11 @@ function GitClient:listFiles(cb,failcb)
         self:getCommit(branch.commit.sha,cb2)
     end
     
-    self:getMasterBranch(cb1,failcb)
+    if commit == nil then
+        self:getMasterBranch(cb1,failcb)
+    else
+        cb2(commit)
+    end
 end
 
 function GitClient:fileContents(sha,cb)
@@ -117,7 +123,7 @@ function GitClient:getMasterBranch(cb,failcb)
         url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/branches",
         callback = function(json,status,header)
             --print("got master branch callback")
-            if status ~= 200 then
+            if failcb and status ~= 200 then
                 failcb(json)
                 return nil
             end
@@ -177,6 +183,25 @@ function GitClient:createCommit(message,tree_sha,parent_sha,cb)
             --print(status,data)
             assert(status==201,"failed to create commit in "..self.reponame)
             cb(Json.Decode(data))
+        end
+    }
+    self:submitRequest(r)
+end
+
+function GitClient:listCommits(cb,failcb)
+    local r = {
+        url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/commits",
+        callback = function(json,status,header)
+            if failcb and status ~= 200 then
+                failcb(json)
+                return nil
+            end
+            assert(status==200,"failed to retrieve commit list for "..self.reponame)
+            local commits = Json.Decode(json)
+            cb(commits)
+        end,
+        failcb = function(err)
+            if failcb then failcb(err) end
         end
     }
     self:submitRequest(r)

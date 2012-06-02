@@ -11,13 +11,13 @@
 		<string>Differ</string>
 		<string>ProjectLoader</string>
 		<string>GitClient</string>
-		<string>SplashScreen</string>
-		<string>DelinkScreen</string>
-		<string>DownloadScreen</string>
-		<string>UploadScreen</string>
-		<string>SyncScreen</string>
-		<string>ProjectScreen</string>
+		<string>StartScreen</string>
+		<string>RepoScreen</string>
+		<string>CommitsScreen</string>
+		<string>FilesScreen</string>
 		<string>DiffScreen</string>
+		<string>PushScreen</string>
+		<string>PullScreen</string>
 		<string>IO</string>
 		<string>Main</string>
 	</array>
