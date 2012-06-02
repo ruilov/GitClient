@@ -26,7 +26,9 @@ function SplashScreen:init()
                 {type="SimpleArrow", text = "Upload",
                     callback = function() screen = UploadScreen(self) end},
                 {type="SimpleArrow", text = "Download",
-                    callback = function() screen = DownloadScreen(self) end}
+                    callback = function() screen = DownloadScreen(self) end},
+                {type="SimpleArrow", text = "De-link",
+                    callback = function() screen = DelinkScreen(self) end}
             }}    
         }
     }

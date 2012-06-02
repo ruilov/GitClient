@@ -35,3 +35,26 @@ function IO.getProjectMap()
     local map = Json.Decode(mapStr)
     return map
 end
+
+function IO.delink(projectName,repoName)
+    local mapStr = readLocalData("projectMap")
+    if not mapStr then mapStr = "[]" end
+    local map = Json.Decode(mapStr)
+    
+    -- see if this mapping already exists
+    local exists = false
+    local newMap = {}
+    for _,elem in ipairs(map) do
+        if elem.project == projectName and elem.repo == repoName then
+            exists = true
+        else
+            table.insert(newMap,elem)
+        end
+    end
+    
+    if not exists then return false end
+
+    local newMapStr = Json.Encode(newMap)
+    saveLocalData("projectMap",newMapStr)
+    return true
+end
