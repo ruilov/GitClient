@@ -12,6 +12,7 @@
 		<string>ProjectLoader</string>
 		<string>GitClient</string>
 		<string>SplashScreen</string>
+		<string>DownloadScreen</string>
 		<string>UploadScreen</string>
 		<string>SyncScreen</string>
 		<string>ProjectScreen</string>

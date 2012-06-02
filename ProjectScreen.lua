@@ -2,9 +2,12 @@
 
 ProjectScreen = class(AppleScreen)
 
-function ProjectScreen:init(repo,proj,prevScreen)
+function ProjectScreen:init(repo,proj,prevScreen,isDownloadScreen)
     self.fileSchema = {}
     self.repoFiles = {}
+    self.isDownloadScreen = isDownloadScreen
+    self.repo = repo
+    self.proj = proj
     
     local schema = {
         title = "Files",
@@ -18,6 +21,15 @@ function ProjectScreen:init(repo,proj,prevScreen)
             {type="block",elems = self.fileSchema}
         }
     }
+    
+    if self.isDownloadScreen then
+        local continuecb = function() self:downloadIt() end
+        table.insert(schema.elems,1,{type="block",elems={
+            {type="SimpleArrow",text="Continue",callback = continuecb,tag="continue"},
+        }})
+        
+        table.insert(schema.elems,2,{type="blank",amount=40})
+    end
        
     self.projectFiles = ProjectLoader.readAll(proj)
     for file,localConts in pairs(self.projectFiles) do
@@ -40,6 +52,12 @@ function ProjectScreen:init(repo,proj,prevScreen)
     
     GIT_CLIENT:setReponame(repo)
     GIT_CLIENT:listFiles(function(files) self:gotFiles(files) end,failcb)
+end
+
+function ProjectScreen:downloadIt()
+    ProjectLoader.save(self.repoFiles,self.proj)
+    IO.mapProjectRepo(self.proj,self.repo)
+    self.taggedElems.continue:setRightText("OK")
 end
 
 function ProjectScreen:gotFiles(files)
@@ -66,8 +84,14 @@ function ProjectScreen:gotFiles(files)
             --print("NEW FILE")
             -- this is a new file
             local arrow = self.taggedElems[file]
-            arrow:setColors(color(0,0,255),color(0,0,255))
-            arrow:setRightText("Added")
+            
+            if self.isDownloadScreen then 
+                arrow:setColors(color(255,0,0),color(255,0,0))
+                arrow:setRightText("Missing")
+            else 
+                arrow:setColors(color(0,0,255),color(0,0,255))
+                arrow:setRightText("Added") 
+            end
         end
     end
 
@@ -91,8 +115,13 @@ function ProjectScreen:gotFiles(files)
             
             if not localConts then
                 -- this file only exists in the repo
-                arrow:setColors(color(255,0,0),color(255,0,0))
-                arrow:setRightText("Deleted")
+                if self.isDownloadScreen then
+                    arrow:setColors(color(0,0,255),color(0,0,255))
+                    arrow:setRightText("New") 
+                else
+                    arrow:setColors(color(255,0,0),color(255,0,0))
+                    arrow:setRightText("Deleted") 
+                end
             else
                 if localConts ~= conts then
                     -- this file was changed

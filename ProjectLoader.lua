@@ -59,3 +59,16 @@ function ProjectLoader.list(projectName)
     if v then table.insert(buffers,d) end
     return buffers
 end
+
+function ProjectLoader.save(fileContents,projectName)
+    local home = os.getenv("HOME")
+    local dir = home.."/Documents/"..projectName..".codea/"
+    
+    for filename,conts in pairs(fileContents) do
+        local fname = dir..filename
+        local file = assert(io.open(fname,"w"))
+        --print(fname,file)
+        file:write(conts)
+        file:close()
+    end
+end
