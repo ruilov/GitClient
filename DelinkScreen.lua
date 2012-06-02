@@ -5,7 +5,7 @@ DelinkScreen = class(AppleScreen)
 function DelinkScreen:init(prevScreen)
     local links = {}  
     local schema = {
-        title = "Dee-link",
+        title = "De-link",
         backButton = {
             text = "Menu",
             callback = function() screen = prevScreen end,
