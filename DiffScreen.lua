@@ -32,28 +32,32 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
     self.tY = 0
     
     self.textBlocks = {}
+    self.lineBlocks = {}
     
     local lastGitIdx=0
     for localIdx,gitIdx in ipairs(diff) do
         if gitIdx == 0 then
             -- this line has been added
-            table.insert(self.textBlocks,{text=localFile[localIdx],col=color(0,255,0,255)})
+            table.insert(self.textBlocks,{text=localFile[localIdx],col=color(0,255,0)})
+            table.insert(self.lineBlocks,{text=localIdx..".",col=color(255,255,255)})
         else
             if gitIdx - lastGitIdx > 1 then
                 -- this line has been removed
                 for idx = lastGitIdx + 1,gitIdx-1 do
-                    table.insert(self.textBlocks,{text=gitFile[idx],col=color(255,0,0,255)})
+                    table.insert(self.textBlocks,{text=gitFile[idx],col=color(255,0,0)})
+                    table.insert(self.lineBlocks,{text="",col=color(255,255,255)})
                 end
                 lastGitIdx = gitIdx
             end
             -- this line stays the same
-            table.insert(self.textBlocks,{text=localFile[localIdx],col=color(255,255,255,255)})
+            table.insert(self.textBlocks,{text=localFile[localIdx],col=color(255,255,255)})
+            table.insert(self.lineBlocks,{text=localIdx..".",col=color(255,255,255)})
             lastGitIdx = gitIdx
         end
     end
     
     for i = lastGitIdx + 1,#gitFile do
-        table.insert(self.textBlocks,{text=gitFile[i],col=color(255,0,0,255)})
+        table.insert(self.textBlocks,{text=gitFile[i],col=color(255,0,0)})
     end
 end
 
@@ -88,12 +92,14 @@ function DiffScreen:draw()
     fontSize(15)
     local startH = HEIGHT-60
     local currentH = startH + self.tY
-    for _,block in ipairs(self.textBlocks) do
+    for idx,block in ipairs(self.textBlocks) do
         local w,h = textSize(block.text)
         currentH = currentH - h
-        if currentH + h <= startH then
+        if currentH <= startH and currentH > -h then
             fill(block.col)
-            text(block.text,10,currentH)
+            text(block.text,70,currentH)
+            fill(self.lineBlocks[idx].col)
+            text(self.lineBlocks[idx].text,5,currentH)
         end
     end
     popStyle()
