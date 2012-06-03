@@ -49,6 +49,8 @@ function PushScreen:init(repo,proj,repoFiles,projFiles,prevScreen)
         selector:setRightText(changeType)
         if changeType == "Added" then
             selector:setColors(color(0,0,255),color(0,0,255))
+        elseif changeType == "Removed" then
+            selector:setColors(color(255,0,0),color(255,0,0))
         else -- changeType should be Changed
             selector:setColors(color(255,255,0),color(255,255,0))
         end
@@ -67,14 +69,28 @@ function PushScreen:pushIt()
     end
     
     -- retrieve the list of files
-    local selectedFiles = {}
+    local changedFiles = {}
+    local removedFiles = {}
     for file,changeType in pairs(self.toPush) do
         local selector = self.taggedElems["file"..file]
-        if selector.selected then 
-            selectedFiles[file] = self.projFiles[file] 
+        if selector.selected then
+            if self.projFiles[file] then
+                changedFiles[file] = self.projFiles[file] 
+            else
+                table.insert(removedFiles,file)
+            end
         end
     end
-
+    
+    --[[
+    print("changedfiles")
+    for file,c in pairs(changedFiles) do print(file) end
+    
+    print("removedFiles")
+    for _,f in ipairs(removedFiles) do print(f) end
+    --assert(false)
+    --]]
+    
     self.taggedElems["OK"]:showHourGlass(true)
     self.active = false -- we'll wait for thee http request
 
@@ -95,7 +111,7 @@ function PushScreen:pushIt()
             
     GIT_CLIENT:setReponame(self.repo)
     GIT_CLIENT:setPassword(password)
-    GIT_CLIENT:commit(selectedFiles,msg,commitcb,failcb)
+    GIT_CLIENT:commit(changedFiles,removedFiles,msg,commitcb,failcb)
 end
 
 function PushScreen:filesToPush()
@@ -105,6 +121,12 @@ function PushScreen:filesToPush()
             toPush[file]="Added"
         elseif self.repoFiles[file] ~= projConts then
             toPush[file]="Changed"
+        end
+    end
+    
+    for file,repoConts in pairs(self.repoFiles) do
+        if self.projFiles[file] == nil then
+            toPush[file]="Removed"
         end
     end
     return toPush

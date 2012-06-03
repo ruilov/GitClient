@@ -81,23 +81,26 @@ end
 
 -- contents is a table mapping file names to their new contents
 -- note that anything that is not in the contents will be erased from the repo
-function GitClient:commit(contents,message,cb,failcb)
+function GitClient:commit(contents,todelete,message,cb,failcb)
     local old_commit_sha = nil
     local new_commit_sha = nil
     local new_tree_sha = nil
     
+    -- user callback
     local cb5 = function(data)
         cb({tree=new_tree_sha,commit=new_commit_sha})
     end
     
+    -- update the master reference to the new commit
     local cb4 = function(new_commit)
         new_commit_sha = new_commit.sha
         self:updateMasterRef(new_commit.sha,cb5)
     end
     
+    -- create the new commit object
     local cb3 = function(new_tree)
         new_tree_sha = new_tree.sha
-        self:createCommit(message,new_tree.sha,old_commit_sha,cb4)
+        self:createCommit(message,new_tree.sha,old_commit_sha,todelete,cb4)
     end
     
     -- get the tree from the commit
@@ -155,6 +158,13 @@ function GitClient:createTree(base_tree,contents,cb)
         table.insert(inputs.tree,{path=file,content=conts})
     end
     
+    --[[
+    for _,file in ipairs(todelete) do
+        print(file)
+        table.insert(inputs.tree,{path=file,content=Json.Null()})
+    end
+    --]]
+    
     local r = {
         url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/git/trees",
         method = "POST",
@@ -169,10 +179,19 @@ function GitClient:createTree(base_tree,contents,cb)
     self:submitRequest(r)
 end
 
-function GitClient:createCommit(message,tree_sha,parent_sha,cb)
+function GitClient:createCommit(message,tree_sha,parent_sha,todelete,cb)
     assert(self.reponame~=nil,"trying to create a tree without setting the repo")
 
     local inputs = {message=message,tree=tree_sha,parents={parent_sha}}
+    
+    --[[
+    print("todelete in createcommit")
+    inputs.files = {}
+    for _,f in ipairs(todelete) do 
+        print(f)
+        table.insert(inputs.files,{status="removed",filename=f})
+    end
+    --]]
     
     local r = {
         url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/git/commits",
@@ -243,6 +262,7 @@ function GitClient:getSha(sha,path,cb,raw)
         url = BASE_URL.."repos/"..self.username.."/"..self.reponame.."/"..path..sha,
         headers = headers,
         callback = function(json,status,header)
+            --print("in callback")
             assert(status==200,"failed to retrieve "..path.." "..sha)
             local val = json
             if not raw then val = Json.Decode(json) end
