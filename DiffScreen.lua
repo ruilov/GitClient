@@ -28,7 +28,6 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
     -- topY = 10 for example means that we start showing only from
     -- 10 on down
     self.tY = 0
-    self.pointedLine = nil -- for the prev/next buttons
     self.textBlocks = {}
     self.lineBlocks = {}
     local lastGitIdx=0
@@ -40,7 +39,6 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
             table.insert(self.textBlocks,{text=localFile[localIdx],col=color(0,255,0),
                 type="Added"})
             table.insert(self.lineBlocks,{text=localIdx..".",col=color(255,255,255)})
-            if not self.pointedLine then self.pointedLine = row end
         else
             if gitIdx - lastGitIdx > 1 then
                 -- these lines have been removed
@@ -48,7 +46,6 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
                     table.insert(self.textBlocks,{text=gitFile[idx],col=color(255,0,0),
                         type="Removed"})
                     table.insert(self.lineBlocks,{text="",col=color(255,255,255)})
-                    if not self.pointedLine then self.pointedLine = row end
                 end
                 lastGitIdx = gitIdx
             end
@@ -61,7 +58,6 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
     
     for i = lastGitIdx + 1,#gitFile do
         table.insert(self.textBlocks,{text=gitFile[i],col=color(255,0,0),type="Removed"})
-        if not self.pointedLine then self.pointedLine = row end
     end
     
     -- create the next and prev buttons
@@ -108,7 +104,7 @@ end
 
 function DiffScreen:nextDiff()
     local si = self.pointedLine
-    if not si then si = 1 end
+    if not si then si = 0 end
     
     -- first find a non change, then find a change
     local nonFound = false
@@ -126,7 +122,7 @@ end
 
 function DiffScreen:prevDiff()
     local si = self.pointedLine
-    if not si then si = 1 end
+    if not si then si = 0 end
     
     -- first find a non change, then find a change
     local nonFound = false
@@ -191,7 +187,7 @@ function DiffScreen:draw()
     for idx,block in ipairs(self.textBlocks) do
         local w,h = textSize(block.text)
         currentH = currentH - h
-        if currentH <= startH and currentH > -h then
+        if currentH <= startH - h and currentH > -h then
             fill(block.col)
             text(block.text,70,currentH)
             fill(self.lineBlocks[idx].col)
