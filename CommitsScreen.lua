@@ -85,7 +85,6 @@ function CommitsScreen:commitDataCB(commit)
     -- send a new commit request
     if self.currentIdx < math.min(#self.commits,self.maxCommits) then
         self.currentIdx = self.currentIdx + 1
-        --print("getting next ",self.currentIdx)
         GIT_CLIENT:getCommit(self.commits[self.currentIdx].sha,
             function(c) self:commitDataCB(c) end)
         -- keep the hour glass
@@ -100,7 +99,6 @@ function CommitsScreen:commitDataCB(commit)
             
             self.currentIdx = self.currentIdx + 1            
             self.maxCommits = self.maxCommits + 5
-            --print("getting next commit",self.currentIdx)
             GIT_CLIENT:getCommit(self.commits[self.currentIdx].sha,
                 function(c) self:commitDataCB(c) end)
             -- show the hour glass again
