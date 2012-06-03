@@ -19,6 +19,8 @@ function PullScreen:init(repo,proj,repoFiles,projFiles,prevScreen)
             callback = function() screen = prevScreen end,
         },
         elems = {
+            {type="text",text="Pull to "..proj.." from "..repo},
+            {type="blank",amount=20},
             {type="block",elems = {
                 {type="SimpleArrow",text="OK",callback=function() self:pullIt() end,
                     tag="OK"},
