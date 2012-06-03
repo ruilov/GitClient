@@ -63,12 +63,10 @@ function FilesScreen:pullCB()
 end
 
 function FilesScreen:gotFiles(files)
-    local remoteList = {}
     -- first recreate the schema
     for _,k in ipairs(files) do
         local filename = k.path
-        remoteList[filename] = 1
-        
+        self.repoFiles[filename] = 1
         if self.projectFiles[filename] == nil then
             local cb = function()
                 screen = DiffScreen(filename,self.projectFiles[filename],
@@ -78,18 +76,9 @@ function FilesScreen:gotFiles(files)
             table.insert(self.fileSchema,1,newElem)
         end
     end
-    self:rebuild()
-    self.taggedElems.label:showHourGlass(true)
     
-    for file,_ in pairs(self.projectFiles) do
-        if remoteList[file] == nil then
-            -- this is a new file
-            local arrow = self.taggedElems[file]
-            arrow:setColors(color(0,0,255),color(0,0,255))
-            arrow:setRightText("Added")
-        end
-    end
-
+    self:reorder()
+    
     -- now get the contents of each file
     local nfiles = #files
     local countFiles = 0
@@ -105,18 +94,12 @@ function FilesScreen:gotFiles(files)
             end
             
             local arrow = self.taggedElems[filename]
-            
             local localConts = self.projectFiles[filename]
-            
             if not localConts then
-                -- this file only exists in the repo
-                arrow:setColors(color(255,0,0),color(255,0,0))
-                arrow:setRightText("Deleted") 
+                self:reorder()
             else
                 if localConts ~= conts then
-                    -- this file was changed
-                    arrow:setColors(color(255,255,0),color(255,255,0))
-                    arrow:setRightText("Changed")
+                    self:reorder()
                 end
             end
         end
@@ -125,3 +108,61 @@ function FilesScreen:gotFiles(files)
     end
 end
 
+-- move modified items to the top of the list
+function FilesScreen:reorder()
+    local newFileSchema = {}
+    -- first add the deleted and unch files. These will be last
+    for _,elem in ipairs(self.fileSchema) do
+        local file = elem.text
+        if self.repoFiles[file] == nil then 
+        elseif self.projectFiles[file] == nil then 
+            table.insert(newFileSchema,1,elem)
+        elseif self.repoFiles[file] ~= 1 and self.projectFiles[file] ~= self.repoFiles[file] then
+        else
+            table.insert(newFileSchema,elem) 
+        end
+    end
+    -- now add changed
+    for _,elem in ipairs(self.fileSchema) do
+        local file = elem.text
+        if self.repoFiles[file] == nil then 
+        elseif self.projectFiles[file] == nil then 
+        elseif self.repoFiles[file] ~= 1 and self.projectFiles[file] ~= self.repoFiles[file] then
+            table.insert(newFileSchema,1,elem)
+        end
+    end
+    -- now add new
+    for _,elem in ipairs(self.fileSchema) do
+        local file = elem.text
+        if self.repoFiles[file] == nil then 
+            table.insert(newFileSchema,1,elem)
+        end
+    end
+
+    -- replace the contents of the file schema
+    for i=#self.fileSchema,1,-1 do self.fileSchema[i]=nil end
+    for _,elem in ipairs(newFileSchema) do table.insert(self.fileSchema,elem) end
+    
+    self:rebuild()
+    
+    local waiting = false
+    for _,elem in ipairs(self.fileSchema) do
+        local file = elem.text
+        local arrow = self.taggedElems[file]
+        if self.repoFiles[file] == 1 then waiting = true end
+        
+        -- added files
+        if self.repoFiles[file] == nil then 
+            arrow:setColors(color(0,0,255),color(0,0,255))
+            arrow:setRightText("Added") 
+        elseif self.projectFiles[file] == nil then 
+            arrow:setColors(color(255,0,0),color(255,0,0))
+            arrow:setRightText("Deleted")
+        elseif self.repoFiles[file] ~= 1 and self.projectFiles[file] ~= self.repoFiles[file] then
+            arrow:setColors(color(255,255,0),color(255,255,0))
+            arrow:setRightText("Changed")
+        end
+    end
+    
+    if waiting then self.taggedElems.label:showHourGlass(true) end
+end
