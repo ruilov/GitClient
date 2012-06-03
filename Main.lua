@@ -2,9 +2,9 @@ supportedOrientations(LANDSCAPE_ANY)
 
 -- Main.lua
 function setup()
-    watch("at")
+    --watch("at")
     --clearLocalData()
-    TOUCHES = {}
+    --TOUCHES = {}
     screen = StartScreen()
     
     local username = IO.loadUsername()
@@ -16,7 +16,7 @@ function setup()
 end
 
 function draw()
-    at = ElapsedTime
+    --at = ElapsedTime
     
     background(0)
     screen:draw()
@@ -24,7 +24,7 @@ function draw()
         GLOBAL_SHOWKEYBOARD = nil
         showKeyboard()
     end
-    
+    --[[
     pushStyle() 
     noStroke()
     ellipseMode(CENTER)
@@ -42,10 +42,11 @@ function draw()
     end
     TOUCHES = newTouches
     popStyle()
+    --]]
 end
 
 function touched(t)
-    table.insert(TOUCHES,{touch=t,time=ElapsedTime})
+    --table.insert(TOUCHES,{touch=t,time=ElapsedTime})
     screen:touched(t)
 end
 
