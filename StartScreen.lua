@@ -8,7 +8,7 @@ StartScreen = class(AppleScreen)
 
 function StartScreen:init()
     local quickLinks = IO.getQuickLinks()
-    quickLinks = Table.sub(quickLinks,1,10)
+    quickLinks = Table.sub(quickLinks,1,30)
     
     local quickElems = {}
     for _,link in ipairs(quickLinks) do
