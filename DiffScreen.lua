@@ -82,7 +82,7 @@ function DiffScreen:draw()
     fill(0,0,0)
     rect(0,0,WIDTH,HEIGHT-50)
     
-    font("AmericanTypewriter-Bold")
+    font("ArialMT")
     
     textMode(CORNER)
     fontSize(15)
