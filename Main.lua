@@ -1,5 +1,9 @@
+supportedOrientations(LANDSCAPE_ANY)
+
 -- Main.lua
 function setup()
+    watch("at")
+    --clearLocalData()
     TOUCHES = {}
     screen = StartScreen()
     
@@ -12,6 +16,8 @@ function setup()
 end
 
 function draw()
+    at = ElapsedTime
+    
     background(0)
     screen:draw()
     if GLOBAL_SHOWKEYBOARD then
