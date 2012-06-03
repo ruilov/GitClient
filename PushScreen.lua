@@ -36,7 +36,28 @@ function PushScreen:init(repo,proj,repoFiles,projFiles,prevScreen)
         }
     }
     
+    local addedFiles = {}
+    local removedFiles = {}
+    local changedFiles = {}
     for file,changeType in pairs(self.toPush) do
+        if changeType == "Added" then table.insert(addedFiles,file)
+        elseif changeType == "Removed" then table.insert(removedFiles,file)
+        else -- changed
+            table.insert(changedFiles,file) 
+        end
+    end
+    
+    table.sort(addedFiles)
+    table.sort(removedFiles)
+    table.sort(changedFiles)
+    
+    for _,file in ipairs(addedFiles) do
+        table.insert(self.fileElems,{text=file,tag="file"..file})
+    end
+    for _,file in ipairs(changedFiles) do
+        table.insert(self.fileElems,{text=file,tag="file"..file})
+    end
+    for _,file in ipairs(removedFiles) do
         table.insert(self.fileElems,{text=file,tag="file"..file})
     end
     

@@ -48,6 +48,6 @@ function StartScreen:init()
             {type="blank",amount=30}
         }
     }
-    Table.insertAll(schema.elems,quickElems)
+    Table.appendAll(schema.elems,quickElems)
     AppleScreen.init(self,schema)
 end

@@ -3,6 +3,7 @@
 -- from local to repo version
 
 import("LIB LUI")
+import("LIB Table")
 
 FilesScreen = class(AppleScreen)
 
@@ -110,34 +111,33 @@ end
 
 -- move modified items to the top of the list
 function FilesScreen:reorder()
-    local newFileSchema = {}
-    -- first add the deleted and unch files. These will be last
+    local added = {}
+    local removed = {}
+    local changed = {}
+    local unch = {}
     for _,elem in ipairs(self.fileSchema) do
         local file = elem.text
-        if self.repoFiles[file] == nil then 
+        if self.repoFiles[file] == nil then
+            table.insert(added,elem)
         elseif self.projectFiles[file] == nil then 
-            table.insert(newFileSchema,1,elem)
+            table.insert(removed,elem)
         elseif self.repoFiles[file] ~= 1 and self.projectFiles[file] ~= self.repoFiles[file] then
+            table.insert(changed,elem)
         else
-            table.insert(newFileSchema,elem) 
+            table.insert(unch,elem)
         end
     end
-    -- now add changed
-    for _,elem in ipairs(self.fileSchema) do
-        local file = elem.text
-        if self.repoFiles[file] == nil then 
-        elseif self.projectFiles[file] == nil then 
-        elseif self.repoFiles[file] ~= 1 and self.projectFiles[file] ~= self.repoFiles[file] then
-            table.insert(newFileSchema,1,elem)
-        end
-    end
-    -- now add new
-    for _,elem in ipairs(self.fileSchema) do
-        local file = elem.text
-        if self.repoFiles[file] == nil then 
-            table.insert(newFileSchema,1,elem)
-        end
-    end
+    
+    Table.sort(added,"text")
+    Table.sort(removed,"text")
+    Table.sort(changed,"text")
+    Table.sort(unch,"text")
+    
+    local newFileSchema = {}
+    Table.appendAll(newFileSchema,added)
+    Table.appendAll(newFileSchema,removed)
+    Table.appendAll(newFileSchema,changed)
+    Table.appendAll(newFileSchema,unch)
 
     -- replace the contents of the file schema
     for i=#self.fileSchema,1,-1 do self.fileSchema[i]=nil end
