@@ -150,7 +150,7 @@ end
 
 function JsonWriter:ParseString(s)
     self:Append('"')
-    self:Append(string.gsub(s, "[%z%c\\\"/]", function(n)
+    self:Append(string.gsub(s, "[%z%c%%\\\"/]", function(n)
         local c = self.backslashes[n]
         if c then return c end
         return string.format("\\u%.4X", string.byte(n))
