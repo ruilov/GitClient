@@ -157,7 +157,7 @@ function GitClient:createTree(base_tree,contents,cb)
     --print("base = ",base_tree)
     for file,conts in pairs(contents) do
         --print("FILE = "..file)
-        table.insert(inputs.tree,{path=file,content=conts,type="blob",mode="100644"})
+        table.insert(inputs.tree,{path=file,content=conts})
     end
     
     --[[
@@ -173,11 +173,7 @@ function GitClient:createTree(base_tree,contents,cb)
         authorization = true,
         inputs = inputs,
         callback = function(data,status,header)
-            --[[print(status,data,header)
-            for k,v in pairs(header) do
-                print(k,v)
-            end
-            --]]
+            --print(status,data,header)
             assert(status==201,"failed to create tree in "..self.reponame)
             cb(Json.Decode(data))
         end
@@ -287,8 +283,8 @@ function GitClient:submitRequest(req)
     local method = req.method or "GET"
     local inputs = ""
     
-    if req.inputs then 
-        inputs = Json.Encode(req.inputs) 
+    if req.inputs then
+        inputs = Json.Encode(req.inputs)
     end
     
     local headers = req.headers or {}
@@ -304,6 +300,7 @@ function GitClient:submitRequest(req)
         headers = headers,
         data = inputs
     })
+    
     --[[
     print("sent request")
     print("url = "..req.url)
@@ -313,5 +310,6 @@ function GitClient:submitRequest(req)
     for c,v in pairs(headers) do print(c.." = "..v) end
     print("")
     --]]
+    
     --req.callback()
 end
