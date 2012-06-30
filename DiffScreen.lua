@@ -29,7 +29,7 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
     -- 10 on down
     self.tY = 0
     self.textBlocks = {}
-    self.lineBlocks = {}
+    self.lineBlocks = {} -- line numbers
     local lastGitIdx=0
     local row = 0
     for localIdx,gitIdx in ipairs(diff) do
@@ -58,6 +58,7 @@ function DiffScreen:init(filename,localConts,gitConts,prevScreen)
     
     for i = lastGitIdx + 1,#gitFile do
         table.insert(self.textBlocks,{text=gitFile[i],col=color(255,0,0),type="Removed"})
+        table.insert(self.lineBlocks,{text="",col=color(255,255,255)})
     end
     
     -- create the next and prev buttons
