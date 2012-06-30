@@ -106,6 +106,7 @@ function GitClient:commit(contents,todelete,message,cb,failcb)
     -- get the tree from the commit
     local cb2 = function(commit)
         --print("going to create tree")
+        --print("commit",commit.commit.tree.sha)
         self:createTree(commit.commit.tree.sha,contents,cb3)
     end
     
@@ -153,9 +154,10 @@ function GitClient:createTree(base_tree,contents,cb)
     assert(self.reponame~=nil,"trying to create a tree without setting the repo")
     
     local inputs = {base_tree = base_tree,tree={}}
+    --print("base = ",base_tree)
     for file,conts in pairs(contents) do
-        --print("FILE = ",file)
-        table.insert(inputs.tree,{path=file,content=conts})
+        --print("FILE = "..file)
+        table.insert(inputs.tree,{path=file,content=conts,type="blob",mode="100644"})
     end
     
     --[[
@@ -171,7 +173,11 @@ function GitClient:createTree(base_tree,contents,cb)
         authorization = true,
         inputs = inputs,
         callback = function(data,status,header)
-            --print(status,data)
+            --[[print(status,data,header)
+            for k,v in pairs(header) do
+                print(k,v)
+            end
+            --]]
             assert(status==201,"failed to create tree in "..self.reponame)
             cb(Json.Decode(data))
         end
