@@ -178,6 +178,8 @@ function GitClient:createTree(base_tree,contents,cb)
             cb(Json.Decode(data))
         end
     }
+    r.headers = {}
+    r.headers["Content-Type"] = "application/json"
     self:submitRequest(r)
 end
 
@@ -206,6 +208,8 @@ function GitClient:createCommit(message,tree_sha,parent_sha,todelete,cb)
             cb(Json.Decode(data))
         end
     }
+    r.headers = {}
+    r.headers["Content-Type"] = "application/json"
     self:submitRequest(r)
 end
 
